@@ -1,16 +1,10 @@
-import numpy as np
-from nilearn import datasets, input_data, plotting, connectome, image
-from nilearn.maskers import NiftiMapsMasker
-from nilearn.regions import RegionExtractor
-from nilearn import plotting
-from glob import glob
-import os
-from nilearn.decomposition import DictLearning
-from nilearn.image import resample_img
-import nibabel as nib
 import warnings
 import numpy as np
+from glob import glob
 from matplotlib import pyplot as plt
+from nilearn import datasets, plotting, connectome, image
+from nilearn.regions import RegionExtractor
+from nilearn.decomposition import DictLearning
 
 def load_data(external=False):
     if external:
@@ -18,8 +12,7 @@ def load_data(external=False):
         func_filenames = rest_dataset.func
         confounds = rest_dataset.confounds
     else:
-        # func_filenames = sorted(glob('data/functional/*.nii'))
-        func_filenames = sorted(glob('data/resampled/*.nii'))
+        func_filenames = sorted(glob('data/resampled/*.nii'))   # functional files return 'All masks should have the same affine'
         confounds = [None] * len(func_filenames)                # Replace with actual confounds if any
         print(f"Found {len(func_filenames)} fMRI files") 
 
@@ -108,7 +101,7 @@ if __name__ == "__main__":
     # Display functional networks 
     warnings.filterwarnings("ignore", category=UserWarning, message="linewidths is ignored by contourf")
     plotting.plot_prob_atlas(components_img, view_type="filled_contours", title="Functional networks (components) extracted by DictLearning")
-    plt.savefig("functional_networks.png")
+    plt.savefig("fmri/functional_networks.png")
     plt.close()
     # plotting.show()
     
@@ -116,7 +109,7 @@ if __name__ == "__main__":
     extractor, regions_extracted_img, n_regions_extracted, regions_index = region_extraction(components_img)
     title = (f"{n_regions_extracted} regions are extracted from 8 components.\nEach separate color of region indicates extracted region")
     plotting.plot_prob_atlas(regions_extracted_img, view_type="filled_contours", title=title)
-    plt.savefig("regions_extracted.png")
+    plt.savefig("fmri/regions_extracted.png")
     plt.close()
     # plotting.show()
 
@@ -124,7 +117,7 @@ if __name__ == "__main__":
     mean_correlations = connectivity_analysis(extractor, func_filenames, confounds)
     title = f"Correlation between {int(n_regions_extracted)} regions"
     plotting.plot_matrix(mean_correlations, vmax=1, vmin=-1, colorbar=True, title=title)
-    plt.savefig("connectome.png")
+    plt.savefig("fmri/connectome.png")
     plt.close()
     # plotting.show()
     
@@ -133,20 +126,24 @@ if __name__ == "__main__":
     regions_img = regions_extracted_img
     coords_connectome = plotting.find_probabilistic_atlas_cut_coords(regions_img)
     plotting.plot_connectome(mean_correlations, coords_connectome, edge_threshold="90%", title=title)
-    plt.savefig("connectome_display.png")
+    plt.savefig("fmri/connectome_display.png")
     plt.close()
     # plotting.show()
 
-    # # Validating the results
-    # img = image.index_img(components_img, 1)
-    # coords = plotting.find_xyz_cut_coords(img)
-    # display = plotting.plot_stat_map(img, cut_coords=coords, colorbar=False, title="Showing one specific network (component)")
+    # Validating the results
+    img = image.index_img(components_img, 1)
+    coords = plotting.find_xyz_cut_coords(img)
+    plotting.plot_stat_map(img, cut_coords=coords, colorbar=False, title="Showing one specific network (component)")
+    plt.savefig("fmri/validation1.png")
+    plt.close()
     # plotting.show()
 
-    # regions_indices_of_map3 = np.where(np.array(regions_index) == 1)
-    # display = plotting.plot_anat(cut_coords=coords, title="Regions from this network")
-    # # Add as an overlay all the regions of index 1
-    # colors = "rgbcmyk"
-    # for each_index_of_map3, color in zip(regions_indices_of_map3[0], colors):
-    #     display.add_overlay(image.index_img(regions_extracted_img, each_index_of_map3), cmap=plotting.cm.alpha_cmap(color))
+    regions_indices_of_map3 = np.where(np.array(regions_index) == 1)
+    display = plotting.plot_anat(cut_coords=coords, title="Regions from this network")
+    # Add as an overlay all the regions of index 1
+    colors = "rgbcmyk"
+    for each_index_of_map3, color in zip(regions_indices_of_map3[0], colors):
+        display.add_overlay(image.index_img(regions_extracted_img, each_index_of_map3), cmap=plotting.cm.alpha_cmap(color))
+    plt.savefig("fmri/validation2.png")
+    plt.close()
     # plotting.show()

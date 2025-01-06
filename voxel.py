@@ -1,13 +1,10 @@
-import numpy as np
-from nilearn import datasets, input_data, plotting, connectome, image
-from nilearn.maskers import NiftiMasker
-from nilearn import plotting
-from glob import glob
-import os
-from nilearn.decomposition import DictLearning
-from nilearn.image import resample_img
-import nibabel as nib
 import warnings
+import numpy as np
+from glob import glob
+from matplotlib import pyplot as plt
+from nilearn import datasets, plotting, connectome, image
+from nilearn.regions import RegionExtractor
+from nilearn.decomposition import DictLearning
 
 def load_data(external=False):
     if external:
