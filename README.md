@@ -1,5 +1,4 @@
-# fmris-viz
-Visualisation of fMRIs
+# MedImaging
 
 fmri.py for fMRI visualization & brain regions extractions & Functional Connectivity Analysis (see results in /fmri).  
 svm.py for SVM predictions on fMRI (see results in /svm).  
